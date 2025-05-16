@@ -1,28 +1,11 @@
 use actix_web::{App, HttpServer};
-use config::{Config, ConfigError, File};
 use rusty_constants::{health_check, hello, quit, request_constants, view_csv_content};
-use serde::Deserialize;
 use std::sync::mpsc;
 use std::thread;
+pub mod config;
+use config::get_config;
 
-#[derive(Debug, Deserialize)]
-struct ServerConfig {
-    host: String,
-    port: u16,
-}
 
-#[derive(Debug, Deserialize)]
-struct Settings {
-    server: ServerConfig,
-}
-
-fn load_config() -> Result<Settings, ConfigError> {
-    let settings = Config::builder()
-        .add_source(File::with_name("config"))
-        .build()?;
-
-    settings.try_deserialize()
-}
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -36,19 +19,7 @@ async fn main() -> std::io::Result<()> {
     //   A subsequent message "Using default configuration" is also printed to `stderr`.
     //   In this case, `config` is initialized with a default `Settings` struct, where the server
     //   is configured to listen on `host: "127.0.0.1"` and `port: 8080`.
-    let config = match load_config() {
-        Ok(config) => config,
-        Err(e) => {
-            eprintln!("Error loading configuration: {}", e);
-            eprintln!("Using default configuration");
-            Settings {
-                server: ServerConfig {
-                    host: "127.0.0.1".to_string(),
-                    port: 8080,
-                },
-            }
-        }
-    };
+    let config = get_config();
 
     let address = format!("{}:{}", config.server.host, config.server.port);
     println!("Starting server at http://{}", address);

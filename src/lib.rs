@@ -4,6 +4,8 @@ use std::fs;
 use std::path::Path;
 pub mod handler;
 use handler::{ConstantRequestPayload, ConstantProcessResult, process_constant};
+pub mod config;
+use config::get_config;
 
 #[post("/constants")]
 // This endpoint is used to handle post requests for the constants data
@@ -41,12 +43,13 @@ async fn quit(server: actix_web::web::Data<mpsc::Sender<()>>) -> impl Responder 
     HttpResponse::Ok().body("Shutting down server...")
 }
 
-const CSV_FILE_PATH: &str = "data/constants.csv";
+
 
 // Helper function to ensure the CSV file exists.
 // Creates an empty file if it doesn't.
 fn ensure_viewable_csv_file_exists() -> std::io::Result<()> {
-    let path = Path::new(CSV_FILE_PATH);
+    let config = get_config();
+    let path = Path::new(config.database.path.as_str());
     if !path.exists() {
         // You could initialize with headers or sample data if needed:
         // fs::write(path, "Header1,Header2\nValue1,Value2\n")?;
@@ -62,8 +65,9 @@ pub async fn view_csv_content() -> impl Responder {
     if let Err(e) = ensure_viewable_csv_file_exists() {
         return HttpResponse::InternalServerError().body(format!("Error ensuring CSV file exists: {}", e));
     }
-
-    match fs::read_to_string(CSV_FILE_PATH) {
+    let config = get_config();
+    let csv_file_path = config.database.path.as_str();
+    match fs::read_to_string(csv_file_path) {
         Ok(csv_content) => {
             let processed_content = csv_content
                 .lines() // Iterate over each line
@@ -116,13 +120,13 @@ pub async fn view_csv_content() -> impl Responder {
     </div>
 </body>
 </html>"#,
-                CSV_FILE_PATH,
+                csv_file_path,
                 escaped_csv_content
             );
             HttpResponse::Ok().content_type("text/html; charset=utf-8").body(html_body)
         }
         Err(e) => {
-            eprintln!("Failed to read CSV file '{}': {}", CSV_FILE_PATH, e);
+            eprintln!("Failed to read CSV file '{}': {}", csv_file_path, e);
             HttpResponse::InternalServerError().body(format!("Could not read CSV file. Error: {}", e))
         }
     }
