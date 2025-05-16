@@ -1,5 +1,5 @@
 [package]
-name = "RustyConstants"
+name = "rusty_constants"
 version = "0.1.0"
 edition = "2024"
 
@@ -9,3 +9,4 @@ serde = "1.0.219"
 cargo-readme = "3.3.1"
 utoipa = "5.3.1"
 config = "0.15.11"
+rand = "0.9.1"

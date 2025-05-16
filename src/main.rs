@@ -1,5 +1,6 @@
-use actix_web::{get, App, HttpResponse, HttpServer, Responder};
+use actix_web::{App, HttpServer};
 use config::{Config, ConfigError, File};
+use rusty_constants::{hello, health_check, quit};
 use serde::Deserialize;
 use std::sync::mpsc;
 use std::thread;
@@ -17,35 +18,24 @@ struct Settings {
 
 fn load_config() -> Result<Settings, ConfigError> {
     let settings = Config::builder()
-        .add_source(File::with_name("config.json"))
+        .add_source(File::with_name("config"))
         .build()?;
 
     settings.try_deserialize()
 }
 
-// Handler function that returns "Hello, world!
-#[get("/")]
-async fn hello() -> impl Responder {
-    HttpResponse::Ok().body("Hello, world!")
-}
-
-// Health check endpoint
-#[get("/health")]
-async fn health_check() -> impl Responder {
-    HttpResponse::Ok().body("Tutto Bene!")
-}
-
-// Shutdown endpoint
-#[get("/quit")]
-async fn quit(server: actix_web::web::Data<mpsc::Sender<()>>) -> impl Responder {
-    println!("Shutdown requested, stopping server...");
-    let _ = server.send(());
-    HttpResponse::Ok().body("Shutting down server...")
-}
-
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     // Load configuration
+    /// Loads the application configuration from a file or uses a default
+    /// configuration if loading fails.
+    ///
+    /// This block attempts to load the configuration by calling `load_config()`.
+    /// - If `load_config()` returns `Ok(config)`, the `config` variable is assigned the loaded settings.
+    /// - If `load_config()` returns `Err(e)`, an error message detailing `e` is printed to the standard error stream.
+    ///   A subsequent message "Using default configuration" is also printed to `stderr`.
+    ///   In this case, `config` is initialized with a default `Settings` struct, where the server
+    ///   is configured to listen on `host: "127.0.0.1"` and `port: 8080`.
     let config = match load_config() {
         Ok(config) => config,
         Err(e) => {

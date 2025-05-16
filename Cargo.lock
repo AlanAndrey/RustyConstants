@@ -3,17 +3,6 @@
 version = 4
 
 [[package]]
-name = "RustyConstants"
-version = "0.1.0"
-dependencies = [
- "actix-web",
- "cargo-readme",
- "config",
- "serde",
- "utoipa",
-]
-
-[[package]]
 name = "actix-codec"
 version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1331,6 +1320,18 @@ name = "rustc-demangle"
 version = "0.1.24"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "719b953e2095829ee67db738b3bfa9fa368c94900df327b3f07fe6e794d2fe1f"
+
+[[package]]
+name = "rusty_constants"
+version = "0.1.0"
+dependencies = [
+ "actix-web",
+ "cargo-readme",
+ "config",
+ "rand",
+ "serde",
+ "utoipa",
+]
 
 [[package]]
 name = "ryu"
